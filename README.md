@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: c19ef5bcd80d0c6618dc14586815fc1d_bc2203929ba511f18cca525400e6dd8f
+    ReservedCode1: 6uIv5e664f5F1LLtMB2ybI28R6W1t4zHlEp6o/YQhPhLX+AlRugxViNmj2OhfVFhbD1AxCpTvNSL8S+Ana352nP4i0EWEmReK3FKO7Gwed0W0VUMu+9RGB9w6E2XDQgmzm7f+HBG3D+7DaEKej5M+fktrt8Oh49AGmPojWDaoaLoqYcjVMqDil9o6FI=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: c19ef5bcd80d0c6618dc14586815fc1d_bc2203929ba511f18cca525400e6dd8f
+    ReservedCode2: 6uIv5e664f5F1LLtMB2ybI28R6W1t4zHlEp6o/YQhPhLX+AlRugxViNmj2OhfVFhbD1AxCpTvNSL8S+Ana352nP4i0EWEmReK3FKO7Gwed0W0VUMu+9RGB9w6E2XDQgmzm7f+HBG3D+7DaEKej5M+fktrt8Oh49AGmPojWDaoaLoqYcjVMqDil9o6FI=
+---
+
 # invoice-organizer-skill
 
 可安装、可复用的 Agent Skill 包，用于「发票批量整理」任务：扫描识别、备份、按规则重命名、生成统计表、报销核对。
@@ -68,3 +79,4 @@ python scripts/build_stats.py "D:\发票\2025-07" detail.json "D:\发票\2025-07
 - 脚本以健壮性优先：文件不存在、字段缺失、金额非法时打印明确错误并跳过，不中断整体。
 - 扫描脚本不强行解析 PDF / 图片内容，发票识别工作由 Agent 结合文件名与内容完成。
 - 合并 PDF（含多张发票）、无法归类的文件保留原目录不动，需人工处理。
+*（内容由AI生成，仅供参考）*

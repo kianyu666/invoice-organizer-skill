@@ -1,7 +1,17 @@
 ---
 name: invoice-organizer
 description: 批量整理发票文件：扫描识别、备份、按规则重命名、生成统计表、报销核对。当用户要求整理发票、重命名发票、统计发票金额、核对报销时使用。
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: c19ef5bcd80d0c6618dc14586815fc1d_baa0b19b9ba511f18cca525400e6dd8f
+    ReservedCode1: JLdKcVxvjwlvVsPaEpViXErXFNCVBS/ekEuxzdIWLPkr/X/IbnN/wQkJeUhDsKlwtcw0vtyuWD5jD49tn6eHslZvpOjTjz8Ny9Pb97Mus8FRZnJXJ8I+Ep0mCV7XCi92yU1TOOS90aFLlLnpt9DCJrZCeHK/EXr4BAhGsgFVHticgrFQwiDkoWUbFbI=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: c19ef5bcd80d0c6618dc14586815fc1d_baa0b19b9ba511f18cca525400e6dd8f
+    ReservedCode2: JLdKcVxvjwlvVsPaEpViXErXFNCVBS/ekEuxzdIWLPkr/X/IbnN/wQkJeUhDsKlwtcw0vtyuWD5jD49tn6eHslZvpOjTjz8Ny9Pb97Mus8FRZnJXJ8I+Ep0mCV7XCi92yU1TOOS90aFLlLnpt9DCJrZCeHK/EXr4BAhGsgFVHticgrFQwiDkoWUbFbI=
 ---
+
+
 
 # 发票整理（invoice-organizer）
 
@@ -67,3 +77,4 @@ Agent 按下述步骤执行，每一步均可选用配套脚本加速。
 - OCR 识别密集表格（金额 / 日期易错）需人工复核后再重命名。
 - 合并 PDF、无法归类的文件保留原目录不动，需人工处理。
 - 重命名、移动、删除等物理操作执行前需向用户确认目标与影响范围。
+*（内容由AI生成，仅供参考）*
