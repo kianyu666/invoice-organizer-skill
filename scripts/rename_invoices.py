@@ -7,8 +7,8 @@
 对每张文件：
   1. 在文件所在目录下「备份」子文件夹生成 _备份_ 前缀副本；
   2. 按规则重命名：
-       普通发票 -> 【发票】类别-日期-金额-人员
-       替票     -> 【替票】类别-日期-金额-人员
+       普通发票 -> 【发票】类别-日期-金额[-人员]
+       替票     -> 【替票】类别-日期-金额[-人员]
   3. 重名冲突自动追加 _2 / _3 ... 后缀。
 无法归类（字段缺失）或文件不存在的记录跳过并打印警告，不中断整体。
 
@@ -16,6 +16,7 @@
     python rename_invoices.py <目录路径> <字段.json>
 """
 import argparse
+import filecmp
 import json
 import os
 import re
@@ -24,12 +25,12 @@ import sys
 
 BACKUP_DIR_NAME = "备份"      # 备份子文件夹名
 BACKUP_PREFIX = "_备份_"      # 备份副本前缀
-REQUIRED_FIELDS = ("filename", "type", "date", "amount", "person")
+REQUIRED_FIELDS = ("filename", "type", "date", "amount")
 
 
 def normalize_time_separators(date_str):
     """将日期字符串末尾的时间分隔符统一为冒号格式（如 14.30.52 -> 14:30:52）。"""
-    return re.sub(r"(\d{2})[._-](\d{2})[._-](\d{2})$", r"\1:\2:\3", date_str)
+    return re.sub(r"(?<!\d)(\d{2})[._-](\d{2})[._-](\d{2})$", r"\1:\2:\3", date_str)
 
 
 def sanitize_for_windows(name):
@@ -48,12 +49,12 @@ def sanitize_for_windows(name):
 
 def build_target_name(record, ext):
     """根据记录与扩展名构造目标文件名。"""
-    prefix = "【替票】" if record.get("is_ticket") else "【发票】"
-    # 替票也可能体现在 type 字段（如「替票-火车票」）
-    if not record.get("is_ticket") and "替票" in str(record["type"]):
-        prefix = "【替票】"
+    is_ticket = record.get("is_ticket") or "替票" in str(record["type"]) or "替票" in str(record.get("filename", ""))
+    prefix = "【替票】" if is_ticket else "【发票】"
     date_str = normalize_time_separators(str(record["date"]))
-    return f"{prefix}{record['type']}-{date_str}-{record['amount']}-{record['person']}{ext}"
+    person = str(record.get("person") or "").strip()
+    person_suffix = f"-{person}" if person else ""
+    return f"{prefix}{record['type']}-{date_str}-{record['amount']}{person_suffix}{ext}"
 
 
 def backup_file(src_path):
@@ -63,8 +64,9 @@ def backup_file(src_path):
     os.makedirs(backup_dir, exist_ok=True)
     backup_path = os.path.join(backup_dir, BACKUP_PREFIX + os.path.basename(src_path))
     if os.path.exists(backup_path):
-        print(f"  [提示] 备份副本已存在，跳过复制：{os.path.basename(backup_path)}")
-        return backup_path
+        if filecmp.cmp(src_path, backup_path, shallow=False):
+            return backup_path
+        backup_path = unique_path(backup_path)
     shutil.copy2(src_path, backup_path)
     return backup_path
 
@@ -89,7 +91,7 @@ def rename_one(src_path, record):
     src_name = os.path.basename(src_path)
 
     # 检查必填字段，缺失则无法归类，跳过
-    missing = [f for f in REQUIRED_FIELDS if not record.get(f)]
+    missing = [f for f in REQUIRED_FIELDS if record.get(f) is None or not str(record.get(f)).strip()]
     if missing:
         return "skip", f"[警告] 字段缺失（{', '.join(missing)}），保留原文件：{src_name}"
 
@@ -98,17 +100,14 @@ def rename_one(src_path, record):
 
     # Windows 下将冒号等非法字符替换为安全字符（自动降级）
     sanitized = sanitize_for_windows(target_name)
-    if sanitized != target_name:
-        print(f"  [提示] 目标名含 Windows 非法字符，已替换为安全字符：{target_name} -> {sanitized}")
-        target_name = sanitized
+    target_name = sanitized
 
     # 已是规范命名则跳过
     if src_name == target_name:
         return "skip", f"[提示] 已是规范命名，跳过：{src_name}"
 
     # 备份
-    backup_path = backup_file(src_path)
-    print(f"  [备份] {src_name} -> {os.path.relpath(backup_path, src_dir)}")
+    backup_file(src_path)
 
     # 重命名（自动处理重名冲突）
     target_path = unique_path(os.path.join(src_dir, target_name))
@@ -153,7 +152,8 @@ def main():
             skip_count += 1
             continue
         status, msg = rename_one(src_path, record)
-        print(f"  {msg}")
+        if status != "ok" and not msg.startswith("[提示] 已是规范命名"):
+            print(f"  {msg}")
         if status == "ok":
             ok_count += 1
         else:
