@@ -19,8 +19,8 @@ class RenameInvoicesTest(unittest.TestCase):
         self.assertEqual(rename_invoices.normalize_time_separators('2026-11-13 14-30-52'), '2026-11-13 14:30:52')
 
     def test_railway_filename(self):
-        name = rename_invoices.build_target_name({'type': '高铁', 'date': '2026-11-16', 'amount': '54.50'}, '.pdf')
-        self.assertEqual(name, '【发票】高铁-26-11-16-54.50.pdf')
+        name = rename_invoices.build_target_name({'type': '高铁', 'origin':'北京南站', 'destination':'天津站', 'date': '2026-11-16', 'amount': '54.50'}, '.pdf')
+        self.assertEqual(name, '【发票】高铁-北京南站-天津站-54.50-26-11-16.pdf')
 
     def test_ambiguous_air_or_rail_is_not_renamed(self):
         (status, _), _ = self.run_case('rail.pdf', b'original', type='高铁/飞机')
@@ -46,12 +46,12 @@ class RenameInvoicesTest(unittest.TestCase):
         self.assertEqual(backup.read_bytes(), b'first')
 
     def test_substitute_ticket_with_person_and_name_collision(self):
-        target = self.folder / '【替票】打车费-26-11-13-21.42-小王.pdf'
+        target = self.folder / '【替票】打车费-26-11-13-21.42.pdf'
         target.write_bytes(b'existing')
         (status, _), backup = self.run_case('b.pdf', b'new', is_ticket=True, person='小王')
         self.assertEqual(status, 'ok')
         self.assertEqual(target.read_bytes(), b'existing')
-        self.assertEqual((self.folder / '【替票】打车费-26-11-13-21.42-小王_2.pdf').read_bytes(), b'new')
+        self.assertEqual((self.folder / '【替票】打车费-26-11-13-21.42_2.pdf').read_bytes(), b'new')
         self.assertEqual(backup.read_bytes(), b'new')
 
     def test_substitute_detected_from_original_filename(self):

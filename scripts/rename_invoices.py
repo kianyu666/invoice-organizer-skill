@@ -53,8 +53,10 @@ def build_target_name(record, ext):
     prefix = "【替票】" if is_ticket else "【发票】"
     date_str = normalize_time_separators(str(record["date"]))
     date_str = re.sub(r"^(\d{2})(\d{2})-(\d{2})-(\d{2})(?=$|\s)", r"\2-\3-\4", date_str)
-    person = str(record.get("person") or "").strip()
+    person = "" if prefix == "【替票】" else str(record.get("person") or "").strip()
     person_suffix = f"-{person}" if person else ""
+    if str(record['type']) == '高铁':
+        return f"{prefix}高铁-{record['origin']}-{record['destination']}-{record['amount']}{person_suffix}-{date_str}{ext}"
     return f"{prefix}{record['type']}-{date_str}-{record['amount']}{person_suffix}{ext}"
 
 
@@ -97,6 +99,8 @@ def rename_one(src_path, record):
         return "skip", f"[警告] 字段缺失（{', '.join(missing)}），保留原文件：{src_name}"
     if re.search(r"高铁\s*[/／-]\s*飞机|飞机\s*[/／-]\s*高铁", str(record['type'])):
         return "skip", f"[警告] 高铁或飞机类型不明确，保留原文件：{src_name}"
+    if str(record['type']) == '高铁' and (not record.get('origin') or not record.get('destination')):
+        return "skip", f"[警告] 高铁起点或终点缺失，保留原文件：{src_name}"
 
     ext = os.path.splitext(src_name)[1] or ".pdf"
     target_name = build_target_name(record, ext)
