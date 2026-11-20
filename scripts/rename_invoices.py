@@ -52,6 +52,7 @@ def build_target_name(record, ext):
     is_ticket = record.get("is_ticket") or "替票" in str(record["type"]) or "替票" in str(record.get("filename", ""))
     prefix = "【替票】" if is_ticket else "【发票】"
     date_str = normalize_time_separators(str(record["date"]))
+    date_str = re.sub(r"^(\d{2})(\d{2})-(\d{2})-(\d{2})(?=$|\s)", r"\2-\3-\4", date_str)
     person = str(record.get("person") or "").strip()
     person_suffix = f"-{person}" if person else ""
     return f"{prefix}{record['type']}-{date_str}-{record['amount']}{person_suffix}{ext}"
@@ -94,6 +95,8 @@ def rename_one(src_path, record):
     missing = [f for f in REQUIRED_FIELDS if record.get(f) is None or not str(record.get(f)).strip()]
     if missing:
         return "skip", f"[警告] 字段缺失（{', '.join(missing)}），保留原文件：{src_name}"
+    if re.search(r"高铁\s*[/／-]\s*飞机|飞机\s*[/／-]\s*高铁", str(record['type'])):
+        return "skip", f"[警告] 高铁或飞机类型不明确，保留原文件：{src_name}"
 
     ext = os.path.splitext(src_name)[1] or ".pdf"
     target_name = build_target_name(record, ext)
